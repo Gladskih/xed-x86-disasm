@@ -32,28 +32,23 @@ function readInstruction(module, pointer, offset, address) {
 export async function loadDisassembler(wasmBinary) {
   const module = await createModule({ wasmBinary });
   module._xed_initialize();
+  const input = module._xed_input();
   return {
     decode(bytes, { bitness = 64, address = 0n } = {}) {
       validate(bytes, bitness, address);
-      const input = module._malloc(15);
-      if (!input) throw new Error("Could not allocate XED input buffer");
       const instructions = [];
-      try {
-        for (let offset = 0; offset < bytes.length;) {
-          const count = Math.min(15, bytes.length - offset);
-          const pc = BigInt.asUintN(64, address + BigInt(offset));
-          module.HEAPU8.set(bytes.subarray(offset, offset + count), input);
-          const pointer = module._xed_decode_one(input, count, bitness,
-            Number(pc & 0xffff_ffffn), Number(pc >> 32n));
-          const instruction = readInstruction(module, pointer, offset, pc);
-          if (instruction.length < 1 || instruction.length > count) {
-            throw new Error("XED returned an invalid instruction length");
-          }
-          instructions.push(instruction);
-          offset += instruction.length;
+      for (let offset = 0; offset < bytes.length;) {
+        const count = Math.min(15, bytes.length - offset);
+        const pc = BigInt.asUintN(64, address + BigInt(offset));
+        module.HEAPU8.set(bytes.subarray(offset, offset + count), input);
+        const pointer = module._xed_decode_one(count, bitness,
+          Number(pc & 0xffff_ffffn), Number(pc >> 32n));
+        const instruction = readInstruction(module, pointer, offset, pc);
+        if (instruction.length < 1 || instruction.length > count) {
+          throw new Error("XED returned an invalid instruction length");
         }
-      } finally {
-        module._free(input);
+        instructions.push(instruction);
+        offset += instruction.length;
       }
       return instructions;
     },

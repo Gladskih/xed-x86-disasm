@@ -4,9 +4,12 @@
 /* Each field is a 32-bit word, so JavaScript can read the record without ABI padding. */
 static uint32_t result[11];
 static char formatted[256];
+static uint8_t input[XED_MAX_INSTRUCTION_BYTES];
 
-uint32_t *xed_decode_one(const uint8_t *bytes, unsigned count, unsigned bitness,
-                         uint32_t address_low, uint32_t address_high) {
+uint8_t *xed_input(void) { return input; }
+
+uint32_t *xed_decode_one(unsigned count, unsigned bitness, uint32_t address_low,
+                         uint32_t address_high) {
   xed_state_t state;
   xed_decoded_inst_t instruction;
   xed_error_enum_t error;
@@ -14,7 +17,7 @@ uint32_t *xed_decode_one(const uint8_t *bytes, unsigned count, unsigned bitness,
   xed_address_width_enum_t width;
   uint64_t address = ((uint64_t)address_high << 32) | address_low;
   for (unsigned i = 0; i < 11; i++) result[i] = 0;
-  if (!bytes || !count || count > XED_MAX_INSTRUCTION_BYTES) {
+  if (!count || count > XED_MAX_INSTRUCTION_BYTES) {
     result[0] = 1;
     result[1] = 1;
     return result;
@@ -25,7 +28,7 @@ uint32_t *xed_decode_one(const uint8_t *bytes, unsigned count, unsigned bitness,
           bitness == 32 ? XED_ADDRESS_WIDTH_32b : XED_ADDRESS_WIDTH_16b;
   xed_state_init2(&state, mode, width);
   xed_decoded_inst_zero_set_mode(&instruction, &state);
-  error = xed_decode(&instruction, bytes, count);
+  error = xed_decode(&instruction, input, count);
   if (error != XED_ERROR_NONE) {
     result[0] = error == XED_ERROR_BUFFER_TOO_SHORT ? 2 : 1;
     result[1] = result[0] == 2 ? count : 1;

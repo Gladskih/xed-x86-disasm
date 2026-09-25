@@ -52,8 +52,8 @@ python3 "$BUILD/xed/mfile.py" --compiler=clang --cc=emcc --cxx=em++ --ar=emar \
 emcc -Oz -flto "$ROOT/native/bridge.c" "$BUILD/obj32/libxed.a" \
   -I"$BUILD/obj32/wkit/include" \
   -sMODULARIZE=1 -sEXPORT_ES6=1 -sENVIRONMENT=web,worker,node \
-  -sFILESYSTEM=0 -sALLOW_MEMORY_GROWTH=1 \
-  -sEXPORTED_FUNCTIONS=_xed_decode_one,_xed_initialize,_malloc,_free \
+  -sFILESYSTEM=0 -sMALLOC=none \
+  -sEXPORTED_FUNCTIONS=_xed_decode_one,_xed_initialize,_xed_input \
   -sEXPORTED_RUNTIME_METHODS=UTF8ToString,HEAPU8 \
   -o "$ROOT/dist/xed.js"
 "$EMSDK/upstream/bin/wasm-opt" --all-features -Oz --strip-producers "$ROOT/dist/xed.wasm" \
