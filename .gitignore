@@ -1,0 +1,7 @@
+/.build/
+/dist/
+/node_modules/
+/*.tgz
+/pack-result.json
+/package.sha256
+/test-results/

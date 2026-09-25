@@ -1,0 +1,51 @@
+name: Build and test package
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            .build/xed
+            .build/mbuild
+            .build/emsdk
+          key: xed-sources-${{ runner.os }}-${{ hashFiles('upstream.json') }}
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build:wasm
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - run: npm run verify:package
+      - name: Pack and test consumer install
+        run: |
+          npm pack --ignore-scripts --json > pack-result.json
+          node scripts/test-tarball.mjs
+          sha256sum "$(node -p 'require("./pack-result.json")[0].filename')" > package.sha256
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: xed-x86-disasm-${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            *.tgz
+            pack-result.json
+            package.sha256
+            dist/build-info.json

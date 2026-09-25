@@ -1,0 +1,51 @@
+name: Publish package
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            .build/xed
+            .build/mbuild
+            .build/emsdk
+          key: xed-sources-${{ runner.os }}-${{ hashFiles('upstream.json') }}
+      - run: test "$GITHUB_REF_NAME" = "v$(node -p 'require("./package.json").version')"
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build:wasm
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - run: npm run verify:package
+      - name: Pack and test release tarball
+        run: |
+          npm pack --ignore-scripts --json > pack-result.json
+          node scripts/test-tarball.mjs
+          sha256sum "$(node -p 'require("./pack-result.json")[0].filename')" > package.sha256
+      - name: Publish exact tested tarball to npm
+        run: npm publish "$(node -p 'require("./pack-result.json")[0].filename')" --ignore-scripts --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Create GitHub release with package and checksum
+        run: gh release create "$GITHUB_REF_NAME" *.tgz package.sha256 dist/build-info.json --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

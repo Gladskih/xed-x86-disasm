@@ -1,0 +1,58 @@
+{
+  "name": "xed-x86-disasm",
+  "version": "0.1.0",
+  "description": "Small Intel XED x86/x64 decoder and disassembler for browsers and Node.js",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/browser.js",
+      "node": "./dist/node.js",
+      "default": "./dist/browser.js"
+    },
+    "./xed.wasm": "./dist/xed.wasm"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "licenses/",
+    "upstream.json"
+  ],
+  "scripts": {
+    "build:wasm": "bash scripts/build-wasm.sh",
+    "build": "node scripts/build.mjs",
+    "lint": "eslint .",
+    "test": "node --test test/*.test.mjs",
+    "test:browser": "playwright test",
+    "verify:package": "node scripts/verify-package.mjs",
+    "prepack": "npm run verify:package"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gladskih/xed-x86-disasm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Gladskih/xed-x86-disasm/issues"
+  },
+  "homepage": "https://github.com/Gladskih/xed-x86-disasm#readme",
+  "keywords": [
+    "xed",
+    "x86",
+    "x64",
+    "disassembler",
+    "webassembly",
+    "wasm"
+  ],
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "^1.63.0",
+    "eslint": "10.0.3",
+    "globals": "17.12.0"
+  }
+}
