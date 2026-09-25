@@ -75,9 +75,13 @@ release workflow publishes the *tested tarball* to npm and attaches the same
 tarball and its SHA-256 to the GitHub release. No compiler or installation
 script runs for package consumers.
 
-The published XED WASM is about 1.8 MB uncompressed. Full current ISA decode
-tables dominate that size; encoder code, examples, and nonessential strings
-are absent. Package verification fails if it grows past 2 MB without review.
+The published XED WASM is about 1.78 MB uncompressed (about 634 KB with gzip
+or 445 KB with Brotli). Full current ISA decode tables dominate that size;
+encoder code, examples, and nonessential strings are absent. Enable HTTP
+compression for the WASM asset when serving it. Removing AVX-512/EVEX saves
+roughly 740 KB, but makes those instructions undecodable, so this build keeps
+them. Package verification fails if the uncompressed WASM grows past 1.85 MB
+without review.
 
 The wrapper is MIT-licensed. Intel XED is Apache-2.0; generated Emscripten
 runtime components have their own notices. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)

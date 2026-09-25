@@ -1,16 +1,16 @@
 import createModule from "./xed.js";
 
-const maxAddress = 0xffff_ffff_ffff_ffffn;
-
 function validate(bytes, bitness, address) {
   if (!(bytes instanceof Uint8Array)) throw new TypeError("bytes must be a Uint8Array");
   if (![16, 32, 64].includes(bitness)) throw new RangeError("bitness must be 16, 32, or 64");
-  if (typeof address !== "bigint" || address < 0n || address > maxAddress) {
+  if (typeof address !== "bigint" || address < 0n ||
+      address > 0xffff_ffff_ffff_ffffn) {
     throw new RangeError("address must be an unsigned 64-bit bigint");
   }
 }
 
 function readInstruction(module, pointer, offset, address) {
+  // native/bridge.c returns eleven 32-bit words, followed by pointed-to XED strings.
   const record = new DataView(module.HEAPU8.buffer, pointer, 44);
   const word = index => record.getUint32(index * 4, true);
   const location = { offset, length: word(1) };
@@ -38,6 +38,7 @@ export async function loadDisassembler(wasmBinary) {
       validate(bytes, bitness, address);
       const instructions = [];
       for (let offset = 0; offset < bytes.length;) {
+        // XED_MAX_INSTRUCTION_BYTES, from upstream include/public/xed/xed-common-defs.h.
         const count = Math.min(15, bytes.length - offset);
         const pc = BigInt.asUintN(64, address + BigInt(offset));
         module.HEAPU8.set(bytes.subarray(offset, offset + count), input);

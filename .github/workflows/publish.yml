@@ -41,11 +41,29 @@ jobs:
           npm pack --ignore-scripts --json > pack-result.json
           node scripts/test-tarball.mjs
           sha256sum "$(node -p 'require("./pack-result.json")[0].filename')" > package.sha256
+      - name: Check existing npm version
+        id: registry
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          expected=$(node -p 'require("./pack-result.json")[0].integrity')
+          existing=$(npm view "xed-x86-disasm@$version" dist.integrity 2>/dev/null || true)
+          if [ -n "$existing" ]; then
+            test "$existing" = "$expected"
+            echo 'exists=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'exists=false' >> "$GITHUB_OUTPUT"
+          fi
       - name: Publish exact tested tarball to npm
+        if: steps.registry.outputs.exists == 'false'
         run: npm publish "$(node -p 'require("./pack-result.json")[0].filename')" --ignore-scripts --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Create GitHub release with package and checksum
-        run: gh release create "$GITHUB_REF_NAME" *.tgz package.sha256 dist/build-info.json --generate-notes
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" *.tgz package.sha256 dist/build-info.json --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" *.tgz package.sha256 dist/build-info.json --generate-notes
+          fi
         env:
           GH_TOKEN: ${{ github.token }}

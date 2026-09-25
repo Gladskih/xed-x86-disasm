@@ -9,7 +9,7 @@ assert.deepEqual((await readdir(new URL("../dist/", import.meta.url))).sort(), [
   "browser.js", "build-info.json", "core.js", "index.d.ts", "node.js", "xed.js", "xed.wasm",
 ]);
 assert(WebAssembly.validate(wasm), "WASM must validate");
-assert(wasm.length < 2_000_000, `WASM grew unexpectedly: ${wasm.length}`);
+assert(wasm.length < 1_850_000, `WASM grew unexpectedly: ${wasm.length}`);
 assert.equal(manifest.xedCommit, pins.xedCommit);
 assert.equal(manifest.mbuildCommit, pins.mbuildCommit);
 assert.equal(manifest.emsdkCommit, pins.emsdkCommit);
