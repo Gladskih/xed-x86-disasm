@@ -83,6 +83,19 @@ roughly 740 KB, but makes those instructions undecodable, so this build keeps
 them. Package verification fails if the uncompressed WASM grows past 1.85 MB
 without review.
 
+Measured size variants on the pinned source and build toolchain:
+
+| XED build flags | WASM size | Difference from release |
+| --- | ---: | ---: |
+| Current decoder-only build | 1,779,204 bytes | — |
+| `--security-level=0` | 2,125,332 bytes | +346,128 bytes |
+| `--security-level=0` with `-fPIC` retained | 1,778,908 bytes | -296 bytes |
+| Compile XED objects with `-flto` | 2,104,918 bytes | +325,714 bytes |
+
+The security-level size increase comes mainly from removing `-fPIC`. Full
+cross-file LTO also increased the final artifact in this configuration. The
+release keeps the smaller default flags and the full AVX-512/EVEX tables.
+
 The wrapper is MIT-licensed. Intel XED is Apache-2.0; generated Emscripten
 runtime components have their own notices. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 and the files in `licenses/`.

@@ -1,6 +1,6 @@
 {
   "name": "xed-x86-disasm",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Small Intel XED x86/x64 decoder and disassembler for browsers and Node.js",
   "type": "module",
   "license": "MIT",

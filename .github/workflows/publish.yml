@@ -56,8 +56,6 @@ jobs:
       - name: Publish exact tested tarball to npm
         if: steps.registry.outputs.exists == 'false'
         run: npm publish "$(node -p 'require("./pack-result.json")[0].filename')" --ignore-scripts --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Create GitHub release with package and checksum
         run: |
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
