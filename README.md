@@ -35,8 +35,6 @@ replacer for JSON serialization.
 `isaSet`, `iclass`, `category`, and `extension` are XED names scoped to the
 pinned upstream version. An ISA set is not a complete CPU compatibility test:
 mode, vendor, feature dependencies, and execution conditions can matter.
-This is a small disassembly API, not a drop-in replacement for iced-x86's
-operand, register, instruction info, or CPUID APIs.
 
 Browser bundlers should copy the WASM asset and pass its URL explicitly:
 
