@@ -85,7 +85,7 @@ Measured size variants on the pinned source and build toolchain:
 
 | XED build flags | WASM size | Difference from release |
 | --- | ---: | ---: |
-| Current decoder-only build | 1,779,204 bytes | — |
+| Current decoder-only build | 1,779,204 bytes | Ã¢â‚¬â€ |
 | `--security-level=0` | 2,125,332 bytes | +346,128 bytes |
 | `--security-level=0` with `-fPIC` retained | 1,778,908 bytes | -296 bytes |
 | Compile XED objects with `-flto` | 2,104,918 bytes | +325,714 bytes |
@@ -97,3 +97,28 @@ release keeps the smaller default flags and the full AVX-512/EVEX tables.
 The wrapper is MIT-licensed. Intel XED is Apache-2.0; generated Emscripten
 runtime components have their own notices. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 and the files in `licenses/`.
+
+## Release maintenance
+
+GitHub releases are idempotent: existing asset SHA-256 digests must match the tested
+files. A matching published release is left intact; interrupted drafts receive only
+missing assets before publication. Conflicting or incomplete published releases fail
+without overwriting files, including when release immutability is enabled.
+
+The upstream watcher checks the primary source library monthly. It makes only metadata
+requests until a newer stable release is found; RC/nightly releases and downgrades
+are rejected. Unchanged or previously attempted candidates do not start another build.
+Run **Check upstream release** with `check_only: true` to inspect availability.
+
+An update pins the release commit and fresh source hashes, reserves the next npm
+compatibility line (minor for 0.x, major for 1.0+), and dispatches the normal publish
+workflow on an isolated candidate branch. That workflow runs the complete existing
+build/test/package gate before merging a PR, creating the version tag and publishing
+the exact tested archive with npm OIDC/provenance. Source/schema or license changes
+that fail CI stop publication; fix the candidate and rerun its publish workflow.
+If main advances, rebase and recheck the candidate. Toolchain pins (Emscripten, Rust,
+Binaryen, wasm-bindgen and build helpers) remain independent of this library watcher.
+
+No cross-repository webhook or persistent publisher token is required. GitHub may
+disable scheduled workflows in inactive public repositories; re-enable the watcher
+if GitHub notifies you of inactivity. Failed candidates remain available for diagnosis.
