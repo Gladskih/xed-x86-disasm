@@ -3,7 +3,7 @@
 Small Intel XED disassembler for JavaScript and TypeScript. It contains a
 prebuilt WebAssembly decoder and runs locally in browsers and Node.js, without
 network access after the package is installed. The build uses upstream Intel
-XED v2026.08.23 with the encoder disabled and nonessential strings removed.
+The pinned XED revision with the encoder disabled and nonessential strings removed.
 
 ```sh
 npm install xed-x86-disasm
